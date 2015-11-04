@@ -4,7 +4,8 @@ Módulo de integração PagSeguro para Magento
 Descrição
 ---------
 ---
-Com o módulo instalado e configurado, você pode pode oferecer o PagSeguro como opção de pagamento em sua loja. O módulo utiliza as seguintes funcionalidades que o PagSeguro oferece na forma de APIs:
+Fork do módulo oficial do PagSeguro para a plataforma Magento, com a adição de opção de finalizar o pedido com os itens do carrinho agrupados em um só valor, dessa forma é possível utilizar o módulo do PagSeguro com outros módulos de desconto como os de Reward Points, entre outros. Link para o módulo oficial: [PagSeguro Magento Oficial].
+O módulo utiliza as seguintes funcionalidades que o PagSeguro oferece na forma de APIs:
 
  - Integração com a [API de Pagamentos]
  - Integração com a [API de Notificações]
@@ -181,6 +182,7 @@ Achou e corrigiu um bug ou tem alguma feature em mente e deseja contribuir?
 * Envie um pull request no [GitHub].
 
 
+  [PagSeguro Magento Oficial]: https://github.com/pagseguro/magento
   [API de Pagamentos]: https://pagseguro.uol.com.br/v2/guia-de-integracao/api-de-pagamentos.html
   [API de Notificações]: https://pagseguro.uol.com.br/v2/guia-de-integracao/api-de-notificacoes.html
   [fórum]: http://forum.pagseguro.uol.com.br/

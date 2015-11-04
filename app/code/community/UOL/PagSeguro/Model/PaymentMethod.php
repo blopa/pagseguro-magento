@@ -77,7 +77,7 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
                 $this->order = $order;
                 $this->shippingData = $this->getShippingData();
         } else {
-                $msg = "[PagSeguroModuleException] Message: ParÃ¢metro InvÃ¡lido para o mÃ©todo setOrder().";
+                $msg = "[PagSeguroModuleException] Message: Parâmetro Inválido para o método setOrder().";
                 throw new Exception(Mage::helper('pagseguro')->__($msg));
         }
     }
@@ -166,6 +166,8 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
         // Get references that stored in the database
         $reference = $helper->getStoreReference();
 
+		$orderType = $this->getOrderType();
+
         $paymentRequest = new PagSeguroPaymentRequest();
         $paymentRequest->setCurrency(PagSeguroCurrencies::getIsoCodeByName(self::REAL));
         $paymentRequest->setReference($reference . $this->order->getId()); //Order ID
@@ -173,7 +175,7 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
         $paymentRequest->setSender($this->getSenderInformation()); //Sender
         $paymentRequest->setItems($this->getItensInformation()); //Itens
         $paymentRequest->setShippingType(SHIPPING_TYPE);
-        $paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', ''));
+        if($orderType == 'LISTA'){ $paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', '')); }
         $paymentRequest->setNotificationURL($this->getNotificationURL());
         $helper->getDiscount($paymentRequest);
 
@@ -273,6 +275,7 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
      * Get information of purchased items
      * @return PagSeguroItem
      */
+	/*
     private function getItensInformation()
     {
         $Itens = $this->order->getAllVisibleItems();
@@ -290,6 +293,40 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
                 array_push($PagSeguroItens, $PagSeguroItem);
         }
 
+        return $PagSeguroItens;
+    }
+	*/
+
+	private function getItensInformation()
+    {
+        $Itens = $this->order->getAllVisibleItems();
+        $PagSeguroItens = array();
+		$orderType = $this->getOrderType();
+
+		if ($orderType == 'LISTA') {
+			//CarShop Items
+			foreach ($Itens as $item) {
+				$PagSeguroItem = new PagSeguroItem();
+				$PagSeguroItem->setId($item->getId());
+				$PagSeguroItem->setDescription(self::fixStringLength($item->getName(), 255));
+				$PagSeguroItem->setQuantity(self::toFloat($item->getQtyOrdered()));
+				$PagSeguroItem->setWeight(round($item->getWeight()));
+				$PagSeguroItem->setAmount(self::toFloat($item->getPrice()));
+
+				array_push($PagSeguroItens, $PagSeguroItem);
+			}
+		}
+		else{
+			$storeName = Mage::getModel('core/store')->load($this->order->getStoreId())->getName(); // get store name
+			$PagSeguroItemCustom = new PagSeguroItem();
+
+			$PagSeguroItemCustom->setId($this->order->getId()); // get order id
+			$PagSeguroItemCustom->setDescription($storeName . " - Pedido " . $this->order->getRealOrderId()); // ou getIncrementId() -> get order 'cute' number
+			$PagSeguroItemCustom->setQuantity(self::toFloat(1)); // set item qty
+			$PagSeguroItemCustom->setWeight(round($this->order->getWeight())); // get order total weight
+			$PagSeguroItemCustom->setAmount(self::toFloat($this->order->getGrandTotal())); // get order total value (including any discounts)
+			array_push($PagSeguroItens, $PagSeguroItemCustom);
+		}
         return $PagSeguroItens;
     }
 
@@ -344,6 +381,15 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
     private function getRedirectCheckout()
     {
         return $this->getConfigData('checkout');
+    }
+
+    /**
+     * Get the order type configured by user default/grouped
+     * @return string - Returns order type selected by the user
+     */
+    private function getOrderType()
+    {
+        return $this->getConfigData('pedido');
     }
 
     /**
