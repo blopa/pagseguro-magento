@@ -25,6 +25,7 @@ use Mage_Payment_Model_Method_Abstract as MethodAbstract;
  */
 class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
 {
+    protected $_formBlockType = 'uol_pagseguro/form'; // adiciona o form na selecao de pagamento
     protected $_code = 'pagseguro';
     protected $_isGateway = true;
     protected $_canAuthorize = true;
