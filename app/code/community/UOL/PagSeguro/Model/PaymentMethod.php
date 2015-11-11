@@ -168,17 +168,20 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
         $reference = $helper->getStoreReference();
 
 		$orderType = $this->getOrderType();
+		$shippingType = $this->getShippingType();
 
         $paymentRequest = new PagSeguroPaymentRequest();
         $paymentRequest->setCurrency(PagSeguroCurrencies::getIsoCodeByName(self::REAL));
         $paymentRequest->setReference($reference . $this->order->getId()); //Order ID
-        $paymentRequest->setShipping($this->getShippingInformation()); //Shipping
-        $paymentRequest->setSender($this->getSenderInformation()); //Sender
-        $paymentRequest->setItems($this->getItensInformation()); //Itens
-        $paymentRequest->setShippingType(SHIPPING_TYPE);
-        if($orderType == 'LISTA'){ $paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', '')); }
+		$paymentRequest->setItems($this->getItensInformation()); //Itens
+		if($shippingType == 'SIM'){
+			$paymentRequest->setShipping($this->getShippingInformation()); //Shipping
+			$paymentRequest->setSender($this->getSenderInformation()); //Sender
+			$paymentRequest->setShippingType(SHIPPING_TYPE);
+			$paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', ''));
+		}
         $paymentRequest->setNotificationURL($this->getNotificationURL());
-        $helper->getDiscount($paymentRequest);
+		$helper->getDiscount($paymentRequest);
 
         //Define Redirect Url
         $redirectUrl = $this->getRedirectUrl();
@@ -190,7 +193,7 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
         }
 
         //Define Extra Amount Information
-        $paymentRequest->setExtraAmount($this->extraAmount());
+		if($orderType == 'LISTA'){ $paymentRequest->setExtraAmount($this->extraAmount()); }
 
         try {
             $paymentUrl = $paymentRequest->register($this->getCredentialsInformation());
@@ -318,7 +321,7 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
 			}
 		}
 		else{
-			$storeName = Mage::getModel('core/store')->load($this->order->getStoreId())->getName(); // get store name
+			$storeName = Mage::getModel('core/store')->load($this->order->getStoreId())->getFrontendName(); // get store name
 			$PagSeguroItemCustom = new PagSeguroItem();
 
 			$PagSeguroItemCustom->setId($this->order->getId()); // get order id
@@ -391,6 +394,15 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
     private function getOrderType()
     {
         return $this->getConfigData('pedido');
+    }
+
+    /**
+     * Get the shipping type configured by user default/grouped
+     * @return string - Returns shipping type selected by the user
+     */
+    private function getShippingType()
+    {
+        return $this->getConfigData('frete');
     }
 
     /**
