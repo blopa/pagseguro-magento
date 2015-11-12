@@ -18,7 +18,7 @@ limitations under the License.
 ************************************************************************
 */
 
-class UOL_PagSeguro_Model_Pedido
+class UOL_PagSeguro_Model_Frete
 {
     /**
      * Options de buy, the default is directed to the site, and the lightbox continues in store
