@@ -168,20 +168,23 @@ class UOL_PagSeguro_Model_PaymentMethod extends MethodAbstract
         $reference = $helper->getStoreReference();
 
 		$orderType = $this->getOrderType();
-		$shippingType = $this->getShippingType();
+        $shippingType = $this->getShippingType();
 
         $paymentRequest = new PagSeguroPaymentRequest();
         $paymentRequest->setCurrency(PagSeguroCurrencies::getIsoCodeByName(self::REAL));
         $paymentRequest->setReference($reference . $this->order->getId()); //Order ID
-		$paymentRequest->setItems($this->getItensInformation()); //Itens
-		if($shippingType == 'SIM'){
-			$paymentRequest->setShipping($this->getShippingInformation()); //Shipping
-			$paymentRequest->setSender($this->getSenderInformation()); //Sender
-			$paymentRequest->setShippingType(SHIPPING_TYPE);
-			$paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', ''));
-		}
+        $paymentRequest->setItems($this->getItensInformation()); //Itens
+        $paymentRequest->setShipping($this->getShippingInformation()); //Shipping
+        $paymentRequest->setSender($this->getSenderInformation()); //Sender
+        $paymentRequest->setShippingType(SHIPPING_TYPE);
+        if($shippingType == 'NAO'){
+            $paymentRequest->setShippingCost(number_format(0, 2, '.', ''));
+        }
+        else{
+            $paymentRequest->setShippingCost(number_format($this->order->getShippingAmount(), 2, '.', ''));
+        }
         $paymentRequest->setNotificationURL($this->getNotificationURL());
-		$helper->getDiscount($paymentRequest);
+        $helper->getDiscount($paymentRequest);
 
         //Define Redirect Url
         $redirectUrl = $this->getRedirectUrl();
